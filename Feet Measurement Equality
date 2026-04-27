@@ -1,0 +1,32 @@
+public class QuantityMeasurementApp {
+
+    private static final double EPSILON = 0.0001;
+
+    /**
+     * Method to check equality of two feet values
+     * @param value1 first measurement in feet
+     * @param value2 second measurement in feet
+     * @return true if equal, false otherwise
+     */
+    public boolean areEqual(double value1, double value2) {
+        // Validate inputs
+        if (Double.isNaN(value1) || Double.isNaN(value2)) {
+            throw new IllegalArgumentException("Values must be valid numbers");
+        }
+
+        // Compare using tolerance to handle floating-point precision
+        return Math.abs(value1 - value2) < EPSILON;
+    }
+
+    // Main method for testing
+    public static void main(String[] args) {
+        QuantityMeasurementApp app = new QuantityMeasurementApp();
+
+        double value1 = 5.0;
+        double value2 = 5.00005;
+
+        boolean result = app.areEqual(value1, value2);
+
+        System.out.println("Are the two values equal? " + result);
+    }
+}
