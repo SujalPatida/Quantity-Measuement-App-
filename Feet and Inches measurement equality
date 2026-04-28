@@ -1,0 +1,79 @@
+public class QuantityMeasurementApp {
+
+    private static final double EPSILON = 0.0001;
+
+    public static void main(String[] args) {
+
+        // Hard-coded values (as per requirement)
+        double feetValue1 = 5.0;
+        double feetValue2 = 5.00001;
+
+        double inchValue1 = 12.0;
+        double inchValue2 = 12.0;
+
+        // Calling static methods
+        boolean feetResult = compareFeet(feetValue1, feetValue2);
+        boolean inchResult = compareInches(inchValue1, inchValue2);
+
+        System.out.println("Feet Equality: " + feetResult);
+        System.out.println("Inches Equality: " + inchResult);
+    }
+
+    // Static method for Feet comparison
+    public static boolean compareFeet(double value1, double value2) {
+        Feet feet = new Feet(value1, value2);
+        return feet.areEqual();
+    }
+
+    // Static method for Inches comparison
+    public static boolean compareInches(double value1, double value2) {
+        Inches inches = new Inches(value1, value2);
+        return inches.areEqual();
+    }
+
+    // Inner class for Feet
+    static class Feet {
+        private double value1;
+        private double value2;
+
+        public Feet(double value1, double value2) {
+            validate(value1);
+            validate(value2);
+            this.value1 = value1;
+            this.value2 = value2;
+        }
+
+        private void validate(double value) {
+            if (Double.isNaN(value)) {
+                throw new IllegalArgumentException("Feet value must be numeric");
+            }
+        }
+
+        public boolean areEqual() {
+            return Math.abs(value1 - value2) < EPSILON;
+        }
+    }
+
+    // Inner class for Inches
+    static class Inches {
+        private double value1;
+        private double value2;
+
+        public Inches(double value1, double value2) {
+            validate(value1);
+            validate(value2);
+            this.value1 = value1;
+            this.value2 = value2;
+        }
+
+        private void validate(double value) {
+            if (Double.isNaN(value)) {
+                throw new IllegalArgumentException("Inches value must be numeric");
+            }
+        }
+
+        public boolean areEqual() {
+            return Math.abs(value1 - value2) < EPSILON;
+        }
+    }
+}
