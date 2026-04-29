@@ -1,0 +1,76 @@
+public class QuantityMeasurementApp {
+
+    private static final double EPSILON = 0.0001;
+
+    public static void main(String[] args) {
+
+        // Example inputs (value + unit)
+        QuantityLength q1 = new QuantityLength(1.0, Unit.FEET);
+        QuantityLength q2 = new QuantityLength(12.0, Unit.INCHES);
+
+        boolean result = compare(q1, q2);
+
+        System.out.println("Are the two quantities equal? " + result);
+    }
+
+    // Static comparison method
+    public static boolean compare(QuantityLength q1, QuantityLength q2) {
+        return q1.equals(q2);
+    }
+
+    // Enum for supported units
+    enum Unit {
+        FEET(1.0),          // base unit
+        INCHES(1.0 / 12.0); // 1 inch = 1/12 feet
+
+        private final double toFeetFactor;
+
+        Unit(double toFeetFactor) {
+            this.toFeetFactor = toFeetFactor;
+        }
+
+        public double toFeet(double value) {
+            return value * toFeetFactor;
+        }
+    }
+
+    // Generic QuantityLength class
+    static class QuantityLength {
+
+        private double value;
+        private Unit unit;
+
+        public QuantityLength(double value, Unit unit) {
+            validate(value, unit);
+            this.value = value;
+            this.unit = unit;
+        }
+
+        // Validation method
+        private void validate(double value, Unit unit) {
+            if (Double.isNaN(value)) {
+                throw new IllegalArgumentException("Value must be numeric");
+            }
+            if (unit == null) {
+                throw new IllegalArgumentException("Unit must be valid");
+            }
+        }
+
+        // Convert to base unit (feet)
+        private double toBaseUnit() {
+            return unit.toFeet(value);
+        }
+
+        // Equality check
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+
+            if (!(obj instanceof QuantityLength)) return false;
+
+            QuantityLength other = (QuantityLength) obj;
+
+            return Math.abs(this.toBaseUnit() - other.toBaseUnit()) < EPSILON;
+        }
+    }
+}
