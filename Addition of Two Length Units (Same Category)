@@ -1,0 +1,112 @@
+// Enum for Length Units (same as UC5)
+enum LengthUnit {
+    FEET(1.0),
+    INCHES(1.0 / 12.0),
+    YARDS(3.0),
+    CENTIMETERS(0.0328084);
+
+    private final double conversionFactorToFeet;
+
+    LengthUnit(double conversionFactorToFeet) {
+        this.conversionFactorToFeet = conversionFactorToFeet;
+    }
+
+    public double toBase(double value) {
+        return value * conversionFactorToFeet;
+    }
+
+    public double fromBase(double baseValue) {
+        return baseValue / conversionFactorToFeet;
+    }
+}
+
+
+// QuantityLength Class
+class QuantityLength {
+
+    private final double value;
+    private final LengthUnit unit;
+
+    public QuantityLength(double value, LengthUnit unit) {
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Value must be finite");
+        }
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit cannot be null");
+        }
+        this.value = value;
+        this.unit = unit;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public LengthUnit getUnit() {
+        return unit;
+    }
+
+    // ✅ UC6: Instance Add Method
+    public QuantityLength add(QuantityLength other) {
+        if (other == null) {
+            throw new IllegalArgumentException("Other length cannot be null");
+        }
+
+        // Convert both to base (feet)
+        double thisInFeet = this.unit.toBase(this.value);
+        double otherInFeet = other.unit.toBase(other.value);
+
+        // Add in base unit
+        double sumInFeet = thisInFeet + otherInFeet;
+
+        // Convert back to unit of first operand
+        double resultValue = this.unit.fromBase(sumInFeet);
+
+        return new QuantityLength(resultValue, this.unit);
+    }
+
+    // ✅ UC6: Static Add Method
+    public static QuantityLength add(QuantityLength l1, QuantityLength l2) {
+        if (l1 == null || l2 == null) {
+            throw new IllegalArgumentException("Lengths cannot be null");
+        }
+
+        double l1Feet = l1.unit.toBase(l1.value);
+        double l2Feet = l2.unit.toBase(l2.value);
+
+        double sumFeet = l1Feet + l2Feet;
+
+        double result = l1.unit.fromBase(sumFeet);
+
+        return new QuantityLength(result, l1.unit);
+    }
+
+    @Override
+    public String toString() {
+        return value + " " + unit;
+    }
+}
+
+
+// Test Class
+public class Main {
+    public static void main(String[] args) {
+
+        QuantityLength l1 = new QuantityLength(1, LengthUnit.FEET);
+        QuantityLength l2 = new QuantityLength(12, LengthUnit.INCHES);
+
+        // Instance method
+        QuantityLength result1 = l1.add(l2);
+        System.out.println("Result: " + result1);
+
+        // Static method
+        QuantityLength result2 = QuantityLength.add(l1, l2);
+        System.out.println("Result: " + result2);
+
+        // Another example
+        QuantityLength l3 = new QuantityLength(2, LengthUnit.YARDS);
+        QuantityLength l4 = new QuantityLength(100, LengthUnit.CENTIMETERS);
+
+        System.out.println("Sum: " + l3.add(l4));
+    }
+}
