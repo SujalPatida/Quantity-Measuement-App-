@@ -1,0 +1,418 @@
+public class QuantityMeasurementApp {
+
+    public static void main(String[] args) {
+
+        /* =====================================================
+                        LENGTH OPERATIONS
+           ===================================================== */
+
+        Quantity<LengthUnit> length1 =
+                new Quantity<>(1, LengthUnit.FEET);
+
+        Quantity<LengthUnit> length2 =
+                new Quantity<>(12, LengthUnit.INCHES);
+
+        System.out.println("Length Equality: "
+                + length1.equals(
+                new Quantity<>(12, LengthUnit.INCHES)));
+
+        System.out.println("Length Conversion: "
+                + length1.convertTo(
+                LengthUnit.CENTIMETERS));
+
+        System.out.println("Length Addition: "
+                + length1.add(
+                length2,
+                LengthUnit.YARDS));
+
+
+
+        /* =====================================================
+                        WEIGHT OPERATIONS
+           ===================================================== */
+
+        Quantity<WeightUnit> weight1 =
+                new Quantity<>(1, WeightUnit.KILOGRAM);
+
+        Quantity<WeightUnit> weight2 =
+                new Quantity<>(1000, WeightUnit.GRAM);
+
+        System.out.println("Weight Equality: "
+                + weight1.equals(weight2));
+
+        System.out.println("Weight Conversion: "
+                + weight1.convertTo(
+                WeightUnit.POUND));
+
+        System.out.println("Weight Addition: "
+                + weight1.add(
+                weight2,
+                WeightUnit.POUND));
+
+
+
+        /* =====================================================
+                        VOLUME OPERATIONS
+           ===================================================== */
+
+        Quantity<VolumeUnit> volume1 =
+                new Quantity<>(1, VolumeUnit.LITRE);
+
+        Quantity<VolumeUnit> volume2 =
+                new Quantity<>(1000, VolumeUnit.MILLILITRE);
+
+        // Equality
+        System.out.println("Volume Equality: "
+                + volume1.equals(volume2));
+
+        // Conversion
+        System.out.println("Volume Conversion: "
+                + volume1.convertTo(
+                VolumeUnit.GALLON));
+
+        // Addition
+        System.out.println("Volume Addition: "
+                + volume1.add(
+                volume2,
+                VolumeUnit.GALLON));
+
+
+
+        /* =====================================================
+                    CROSS CATEGORY TYPE SAFETY
+           ===================================================== */
+
+        System.out.println("Cross Category Check: "
+                + volume1.equals(length1));
+
+
+
+        System.out.println("\nUC11 IMPLEMENTATION SUCCESSFUL");
+    }
+}
+
+
+
+/* =========================================================
+                    IMEASURABLE INTERFACE
+   ========================================================= */
+
+interface IMeasurable {
+
+    double getConversionFactor();
+
+    double convertToBaseUnit(double value);
+
+    double convertFromBaseUnit(double baseValue);
+
+    String getUnitName();
+}
+
+
+
+/* =========================================================
+                        LENGTH UNIT
+   ========================================================= */
+
+enum LengthUnit implements IMeasurable {
+
+    FEET(1.0),
+    INCHES(1.0 / 12.0),
+    YARDS(3.0),
+    CENTIMETERS(0.0328084);
+
+    private final double conversionFactor;
+
+    LengthUnit(double conversionFactor) {
+        this.conversionFactor = conversionFactor;
+    }
+
+    @Override
+    public double getConversionFactor() {
+        return conversionFactor;
+    }
+
+    @Override
+    public double convertToBaseUnit(double value) {
+        return value * conversionFactor;
+    }
+
+    @Override
+    public double convertFromBaseUnit(double baseValue) {
+        return baseValue / conversionFactor;
+    }
+
+    @Override
+    public String getUnitName() {
+        return name();
+    }
+}
+
+
+
+/* =========================================================
+                        WEIGHT UNIT
+   ========================================================= */
+
+enum WeightUnit implements IMeasurable {
+
+    KILOGRAM(1.0),
+    GRAM(0.001),
+    POUND(0.453592);
+
+    private final double conversionFactor;
+
+    WeightUnit(double conversionFactor) {
+        this.conversionFactor = conversionFactor;
+    }
+
+    @Override
+    public double getConversionFactor() {
+        return conversionFactor;
+    }
+
+    @Override
+    public double convertToBaseUnit(double value) {
+        return value * conversionFactor;
+    }
+
+    @Override
+    public double convertFromBaseUnit(double baseValue) {
+        return baseValue / conversionFactor;
+    }
+
+    @Override
+    public String getUnitName() {
+        return name();
+    }
+}
+
+
+
+/* =========================================================
+                        VOLUME UNIT
+   ========================================================= */
+
+enum VolumeUnit implements IMeasurable {
+
+    LITRE(1.0),
+    MILLILITRE(0.001),
+    GALLON(3.78541);
+
+    private final double conversionFactor;
+
+    VolumeUnit(double conversionFactor) {
+        this.conversionFactor = conversionFactor;
+    }
+
+    @Override
+    public double getConversionFactor() {
+        return conversionFactor;
+    }
+
+    // Convert THIS unit → base unit (LITRE)
+    @Override
+    public double convertToBaseUnit(double value) {
+        return value * conversionFactor;
+    }
+
+    // Convert base unit → THIS unit
+    @Override
+    public double convertFromBaseUnit(double baseValue) {
+        return baseValue / conversionFactor;
+    }
+
+    @Override
+    public String getUnitName() {
+        return name();
+    }
+}
+
+
+
+/* =========================================================
+                    GENERIC QUANTITY CLASS
+   ========================================================= */
+
+class Quantity<U extends IMeasurable> {
+
+    private final double value;
+    private final U unit;
+
+    public Quantity(double value, U unit) {
+
+        if (unit == null) {
+            throw new IllegalArgumentException(
+                    "Unit cannot be null");
+        }
+
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException(
+                    "Invalid numeric value");
+        }
+
+        this.value = value;
+        this.unit = unit;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public U getUnit() {
+        return unit;
+    }
+
+
+
+    /* =====================================================
+                        CONVERSION
+       ===================================================== */
+
+    public Quantity<U> convertTo(U targetUnit) {
+
+        if (targetUnit == null) {
+            throw new IllegalArgumentException(
+                    "Target unit cannot be null");
+        }
+
+        double baseValue =
+                unit.convertToBaseUnit(value);
+
+        double convertedValue =
+                targetUnit.convertFromBaseUnit(baseValue);
+
+        convertedValue =
+                roundToTwoDecimals(convertedValue);
+
+        return new Quantity<>(
+                convertedValue,
+                targetUnit
+        );
+    }
+
+
+
+    /* =====================================================
+                            ADDITION
+       ===================================================== */
+
+    // Result in first operand unit
+    public Quantity<U> add(Quantity<U> other) {
+
+        return add(other, this.unit);
+    }
+
+    // Result in specified target unit
+    public Quantity<U> add(
+            Quantity<U> other,
+            U targetUnit) {
+
+        if (other == null) {
+            throw new IllegalArgumentException(
+                    "Other quantity cannot be null");
+        }
+
+        double base1 =
+                unit.convertToBaseUnit(value);
+
+        double base2 =
+                other.unit.convertToBaseUnit(
+                        other.value);
+
+        double sumBase = base1 + base2;
+
+        double result =
+                targetUnit.convertFromBaseUnit(
+                        sumBase);
+
+        result = roundToTwoDecimals(result);
+
+        return new Quantity<>(
+                result,
+                targetUnit
+        );
+    }
+
+
+
+    /* =====================================================
+                            EQUALITY
+       ===================================================== */
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null ||
+                getClass() != obj.getClass()) {
+            return false;
+        }
+
+        Quantity<?> other =
+                (Quantity<?>) obj;
+
+        // Prevent cross-category comparison
+        if (this.unit.getClass() !=
+                other.unit.getClass()) {
+            return false;
+        }
+
+        double thisBase =
+                unit.convertToBaseUnit(value);
+
+        double otherBase =
+                other.unit.convertToBaseUnit(
+                        other.value);
+
+        return Double.compare(
+                roundToTwoDecimals(thisBase),
+                roundToTwoDecimals(otherBase)
+        ) == 0;
+    }
+
+
+
+    /* =====================================================
+                            HASHCODE
+       ===================================================== */
+
+    @Override
+    public int hashCode() {
+
+        double baseValue =
+                unit.convertToBaseUnit(value);
+
+        return Double.hashCode(
+                roundToTwoDecimals(baseValue)
+        );
+    }
+
+
+
+    /* =====================================================
+                            TOSTRING
+       ===================================================== */
+
+    @Override
+    public String toString() {
+
+        return roundToTwoDecimals(value)
+                + " "
+                + unit.getUnitName();
+    }
+
+
+
+    /* =====================================================
+                        ROUNDING UTILITY
+       ===================================================== */
+
+    private double roundToTwoDecimals(double value) {
+
+        return Math.round(value * 100.0) / 100.0;
+    }
+}
